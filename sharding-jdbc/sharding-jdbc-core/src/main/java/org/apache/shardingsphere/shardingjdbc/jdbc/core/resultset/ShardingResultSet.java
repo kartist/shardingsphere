@@ -17,6 +17,10 @@
 
 package org.apache.shardingsphere.shardingjdbc.jdbc.core.resultset;
 
+import java.sql.SQLFeatureNotSupportedException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import org.apache.shardingsphere.shardingjdbc.jdbc.adapter.AbstractResultSetAdapter;
 import org.apache.shardingsphere.underlying.executor.context.ExecutionContext;
 import org.apache.shardingsphere.underlying.merge.result.MergedResult;
@@ -362,4 +366,22 @@ public final class ShardingResultSet extends AbstractResultSetAdapter {
         int columnIndex = columnLabelAndIndexMap.get(columnLabel);
         return mergeResultSet.getValue(columnIndex, Object.class);
     }
+
+    @Override
+    public <T> T getObject(final int columnIndex, final Class<T> type) throws SQLException {
+        if (LocalDateTime.class.equals(type) || LocalDate.class.equals(type) || LocalTime.class.equals(type)) {
+            return (T) ResultSetUtil.convertValue(mergeResultSet.getValue(columnIndex, Timestamp.class), type);
+        }
+        throw new SQLFeatureNotSupportedException("getObject with type");
+    }
+
+    @Override
+    public <T> T getObject(final String columnLabel, final Class<T> type) throws SQLException {
+        int columnIndex = columnLabelAndIndexMap.get(columnLabel);
+        if (LocalDateTime.class.equals(type) || LocalDate.class.equals(type) || LocalTime.class.equals(type)) {
+            return (T) ResultSetUtil.convertValue(mergeResultSet.getValue(columnIndex, Timestamp.class), type);
+        }
+        throw new SQLFeatureNotSupportedException("getObject with type");
+    }
+
 }
