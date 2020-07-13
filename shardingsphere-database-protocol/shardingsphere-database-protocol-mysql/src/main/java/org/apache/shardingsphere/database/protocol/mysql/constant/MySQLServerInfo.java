@@ -34,10 +34,10 @@ public final class MySQLServerInfo {
     /**
      * Server version.
      */
-    public static final String SERVER_VERSION = "8.0.20-Sharding-Proxy 4.1.0";
+    public static final String SERVER_VERSION = "5.7.25-Sharding-Proxy 4.1.0";
     
     /**
      * Charset code 0x21 is utf8_general_ci.
      */
-    public static final int CHARSET = 0x21;
+    public static final int CHARSET = 0xFF;
 }
