@@ -17,14 +17,14 @@
 
 package org.apache.shardingsphere.underlying.rewrite.sql.impl;
 
+import java.util.Collections;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.shardingsphere.underlying.rewrite.context.SQLRewriteContext;
 import org.apache.shardingsphere.underlying.rewrite.sql.SQLBuilder;
 import org.apache.shardingsphere.underlying.rewrite.sql.token.pojo.SQLToken;
 import org.apache.shardingsphere.underlying.rewrite.sql.token.pojo.Substitutable;
-
-import java.util.Collections;
+import org.apache.shardingsphere.underlying.rewrite.sql.token.pojo.generic.InsertValuesToken;
 
 /**
  * Abstract SQL builder.
@@ -32,9 +32,9 @@ import java.util.Collections;
 @RequiredArgsConstructor
 @Getter
 public abstract class AbstractSQLBuilder implements SQLBuilder {
-    
+
     private final SQLRewriteContext context;
-    
+
     @Override
     public final String toSQL() {
         if (context.getSqlTokens().isEmpty()) {
@@ -43,26 +43,37 @@ public abstract class AbstractSQLBuilder implements SQLBuilder {
         Collections.sort(context.getSqlTokens());
         StringBuilder result = new StringBuilder();
         result.append(context.getSql().substring(0, context.getSqlTokens().get(0).getStartIndex()));
+        int idx = 0;
         for (SQLToken each : context.getSqlTokens()) {
             result.append(getSQLTokenText(each));
-            result.append(getConjunctionText(each));
+            if (each instanceof InsertValuesToken) {
+                if (idx != 0) {
+                    result.append(getConjunctionText(each));
+                }
+            } else {
+                result.append(getConjunctionText(each));
+            }
+            idx++;
         }
         return result.toString();
     }
-    
+
     protected abstract String getSQLTokenText(SQLToken sqlToken);
-    
+
     private String getConjunctionText(final SQLToken sqlToken) {
         return context.getSql().substring(getStartIndex(sqlToken), getStopIndex(sqlToken));
     }
-    
+
     private int getStartIndex(final SQLToken sqlToken) {
-        int startIndex = sqlToken instanceof Substitutable ? ((Substitutable) sqlToken).getStopIndex() + 1 : sqlToken.getStartIndex();
+        int startIndex =
+                sqlToken instanceof Substitutable ? ((Substitutable) sqlToken).getStopIndex() + 1
+                        : sqlToken.getStartIndex();
         return Math.min(startIndex, context.getSql().length());
     }
-    
+
     private int getStopIndex(final SQLToken sqlToken) {
         int currentSQLTokenIndex = context.getSqlTokens().indexOf(sqlToken);
-        return context.getSqlTokens().size() - 1 == currentSQLTokenIndex ? context.getSql().length() : context.getSqlTokens().get(currentSQLTokenIndex + 1).getStartIndex();
+        return context.getSqlTokens().size() - 1 == currentSQLTokenIndex ? context.getSql().length()
+                : context.getSqlTokens().get(currentSQLTokenIndex + 1).getStartIndex();
     }
 }
