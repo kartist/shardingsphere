@@ -33,16 +33,17 @@ public class LiteralExpressionSegment implements SimpleExpressionSegment {
 
     private final Object literals;
 
-    public LiteralExpressionSegment(int startIndex, int stopIndex, Object literals) {
+    public LiteralExpressionSegment(final int startIndex, final int stopIndex,
+            final Object literals) {
         this.startIndex = startIndex;
         this.literals = literals;
         this.stopIndex = fixStopIndex(stopIndex);
     }
 
-    private int fixStopIndex(int stopIndex) {
+    private int fixStopIndex(final int stopIndex) {
         if (this.literals instanceof String) {
             CodePointCounter pointCounter = new CodePointCounter();
-            pointCounter.input = (String) this.literals;
+            pointCounter.setInput((String) this.literals);
             int start = this.startIndex;
             int end = stopIndex - start - 1;
             int actualIndex = pointCounter.advanceToIndex(end);
@@ -54,11 +55,29 @@ public class LiteralExpressionSegment implements SimpleExpressionSegment {
     }
 
     public final class CodePointCounter {
-        public String input;
-        public int inputIndex = 0;
-        public int codePointIndex = 0;
 
-        public int advanceToIndex(int newCodePointIndex) {
+        private String input;
+
+        private int inputIndex;
+
+        private int codePointIndex;
+
+        /**
+         * set data.
+         *
+         * @param input input
+         */
+        public void setInput(final String input) {
+            this.input = input;
+        }
+
+        /**
+         * get index.
+         *
+         * @param newCodePointIndex total index
+         * @return index
+         */
+        public int advanceToIndex(final int newCodePointIndex) {
             assert newCodePointIndex >= codePointIndex;
             while (codePointIndex < newCodePointIndex) {
                 int codePoint = Character.codePointAt(input, inputIndex);
