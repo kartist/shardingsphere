@@ -18,20 +18,54 @@
 package org.apache.shardingsphere.sql.parser.sql.segment.dml.expr.simple;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
  * Literal expression segment.
  */
-@RequiredArgsConstructor
 @Getter
 @ToString
 public class LiteralExpressionSegment implements SimpleExpressionSegment {
-    
+
     private final int startIndex;
-    
+
     private final int stopIndex;
-    
+
     private final Object literals;
+
+    public LiteralExpressionSegment(int startIndex, int stopIndex, Object literals) {
+        this.startIndex = startIndex;
+        this.literals = literals;
+        this.stopIndex = fixStopIndex(stopIndex);
+    }
+
+    private int fixStopIndex(int stopIndex) {
+        if (this.literals instanceof String) {
+            CodePointCounter pointCounter = new CodePointCounter();
+            pointCounter.input = (String) this.literals;
+            int start = this.startIndex;
+            int end = stopIndex - start - 1;
+            int actualIndex = pointCounter.advanceToIndex(end);
+            if (actualIndex != end) {
+                return start + actualIndex + 1;
+            }
+        }
+        return stopIndex;
+    }
+
+    public final class CodePointCounter {
+        public String input;
+        public int inputIndex = 0;
+        public int codePointIndex = 0;
+
+        public int advanceToIndex(int newCodePointIndex) {
+            assert newCodePointIndex >= codePointIndex;
+            while (codePointIndex < newCodePointIndex) {
+                int codePoint = Character.codePointAt(input, inputIndex);
+                inputIndex += Character.charCount(codePoint);
+                codePointIndex++;
+            }
+            return inputIndex;
+        }
+    }
 }
