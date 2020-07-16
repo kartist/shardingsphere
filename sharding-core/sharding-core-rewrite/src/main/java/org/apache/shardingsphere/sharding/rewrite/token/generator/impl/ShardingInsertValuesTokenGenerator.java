@@ -17,6 +17,7 @@
 
 package org.apache.shardingsphere.sharding.rewrite.token.generator.impl;
 
+import java.util.OptionalInt;
 import lombok.Setter;
 import org.apache.shardingsphere.underlying.rewrite.sql.token.generator.aware.RouteContextAware;
 import org.apache.shardingsphere.sharding.rewrite.token.pojo.ShardingInsertValue;
@@ -74,6 +75,10 @@ public final class ShardingInsertValuesTokenGenerator implements OptionalSQLToke
     private int getStopIndex(final Collection<InsertValuesSegment> segments) {
         int result = segments.iterator().next().getStopIndex();
         for (InsertValuesSegment each : segments) {
+            OptionalInt maxStop = each.getValues().stream().mapToInt(ExpressionSegment::getStopIndex).max();
+            if (maxStop.isPresent()) {
+                result = Math.max(result, maxStop.getAsInt());
+            }
             result = result < each.getStopIndex() ? each.getStopIndex() : result;
         }
         return result;

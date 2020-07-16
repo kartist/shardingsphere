@@ -48,7 +48,7 @@ public class LiteralExpressionSegment implements SimpleExpressionSegment {
             int end = stopIndex - start - 1;
             int actualIndex = pointCounter.advanceToIndex(end);
             if (actualIndex != end) {
-                return start + actualIndex + 1;
+                return start + actualIndex + 2;
             }
         }
         return stopIndex;
